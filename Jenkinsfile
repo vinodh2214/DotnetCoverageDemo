@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
+        SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
+        DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
     }
 
     stages {
@@ -13,11 +15,18 @@ pipeline {
             }
         }
 
+        stage('Verify Tools') {
+            steps {
+                bat '"%SONAR_SCANNER%" --version'
+                bat '"%DOTNET_COVERAGE%" --version'
+            }
+        }
+
         stage('Sonar Begin') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                    dotnet sonarscanner begin ^
+                    "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
                       /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
@@ -34,14 +43,19 @@ pipeline {
 
         stage('Test + Coverage') {
             steps {
-                bat 'dotnet-coverage collect "dotnet test" -f xml -o coverage.xml'
+                bat """
+                "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
+                """
             }
         }
 
         stage('Sonar End') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    bat 'dotnet sonarscanner end /d:sonar.login=%SONAR_TOKEN%'
+                    bat """
+                    "%SONAR_SCANNER%" end ^
+                      /d:sonar.login=%SONAR_TOKEN%
+                    """
                 }
             }
         }
