@@ -1,0 +1,1 @@
+C:\Users\JALAGAM\DotnetCoverageDemo\.sonarqube\out\1

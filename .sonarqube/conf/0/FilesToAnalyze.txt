@@ -1,0 +1,10 @@
+﻿C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\Calculator.cs
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\Program.cs
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\DemoApi.GlobalUsings.g.cs
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\DemoApi.AssemblyInfo.cs
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\DemoApi.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\appsettings.Development.json
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\appsettings.json
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\DemoApi.http
+C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\Properties\launchSettings.json
