@@ -4,6 +4,8 @@ pipeline {
     environment {
         SONAR_TOKEN = credentials('sonar')
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
+        DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
+        REPORT_GENERATOR = "C:\\Users\\JALAGAM\\.dotnet\\tools\\reportgenerator.exe"
     }
 
     stages {
@@ -21,7 +23,7 @@ pipeline {
                     "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
-                      /d:sonar.coverageReportPaths=**/coverage.cobertura.xml ^
+                      /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml ^
                       /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
                       /d:sonar.tests=**/*.Tests
                     """
@@ -35,20 +37,32 @@ pipeline {
             }
         }
 
-        stage('Test + Coverage (XPlat)') {
+        stage('Test + Coverage') {
             steps {
                 bat """
-                dotnet test ^
-                  --collect:"XPlat Code Coverage" ^
-                  --results-directory TestResults ^
-                  --logger "trx"
+                "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
                 """
             }
         }
 
-        stage('Debug Coverage File') {
+        stage('Generate HTML Coverage Report') {
             steps {
-                bat 'dir /s coverage.cobertura.xml'
+                bat """
+                "%REPORT_GENERATOR%" ^
+                  -reports:coverage.xml ^
+                  -targetdir:coverage-report ^
+                  -reporttypes:Html ^
+                  -assemblyfilters:+* ^
+                  -classfilters:+* ^
+                  -filefilters:-*Program.cs;-*Startup.cs;-*.g.cs ^
+                  -verbosity:Info
+                """
+            }
+        }
+
+        stage('Publish Coverage (HTML)') {
+            steps {
+                archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
             }
         }
 
@@ -61,18 +75,6 @@ pipeline {
                     """
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            // Test results
-            junit '**/*.trx'
-
-            // Jenkins Coverage Visualization
-            recordCoverage tools: [
-                cobertura(pattern: '**/coverage.cobertura.xml')
-            ]
         }
     }
 }
