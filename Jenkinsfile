@@ -5,6 +5,7 @@ pipeline {
         SONAR_TOKEN = credentials('sonar')
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
         DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
+        REPORT_GENERATOR = "C:\\Users\\JALAGAM\\.dotnet\\tools\\reportgenerator.exe"
     }
 
     stages {
@@ -39,6 +40,31 @@ pipeline {
                 bat """
                 "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
                 """
+            }
+        }
+
+        stage('Convert Coverage Report') {
+            steps {
+                bat """
+                "%REPORT_GENERATOR%" ^
+                  -reports:coverage.xml ^
+                  -targetdir:coverage-report ^
+                  -reporttypes:Html;Cobertura
+                """
+            }
+        }
+
+        stage('Publish Coverage') {
+            steps {
+                publishCoverage adapters: [
+                    coberturaAdapter('coverage-report/Cobertura.xml')
+                ]
+            }
+        }
+
+        stage('Archive HTML Report') {
+            steps {
+                archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
             }
         }
 
