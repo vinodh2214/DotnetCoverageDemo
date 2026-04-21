@@ -15,13 +15,6 @@ pipeline {
             }
         }
 
-        stage('Verify Tools') {
-            steps {
-                bat '"%SONAR_SCANNER%" --version'
-                bat '"%DOTNET_COVERAGE%" --version'
-            }
-        }
-
         stage('Sonar Begin') {
             steps {
                 withSonarQubeEnv('SonarQube') {
