@@ -43,26 +43,18 @@ pipeline {
             }
         }
 
-        stage('Convert Coverage Report') {
+        stage('Generate HTML Coverage Report') {
             steps {
                 bat """
                 "%REPORT_GENERATOR%" ^
                   -reports:coverage.xml ^
                   -targetdir:coverage-report ^
-                  -reporttypes:Html;Cobertura
+                  -reporttypes:Html
                 """
             }
         }
 
-        stage('Publish Coverage') {
-    steps {
-        publishCoverage adapters: [
-    coberturaAdapter('coverage-report/Cobertura.xml')
-]
-    }
-}
-
-        stage('Archive HTML Report') {
+        stage('Publish Coverage (HTML)') {
             steps {
                 archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
             }
