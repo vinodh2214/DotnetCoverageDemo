@@ -55,12 +55,12 @@ pipeline {
         }
 
         stage('Publish Coverage') {
-            steps {
-                publishCoverage adapters: [
-                    cobertura('coverage-report/Cobertura.xml')
-                ]
-            }
-        }
+    steps {
+        recordCoverage tools: [
+            cobertura(pattern: 'coverage-report/Cobertura.xml')
+        ]
+    }
+}
 
         stage('Archive HTML Report') {
             steps {
