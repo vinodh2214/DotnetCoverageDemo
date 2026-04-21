@@ -23,7 +23,9 @@ pipeline {
                     "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
-                      /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+                      /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml ^
+                      /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
+                      /d:sonar.tests=**/*.Tests
                     """
                 }
             }
@@ -49,7 +51,11 @@ pipeline {
                 "%REPORT_GENERATOR%" ^
                   -reports:coverage.xml ^
                   -targetdir:coverage-report ^
-                  -reporttypes:Html
+                  -reporttypes:Html ^
+                  -assemblyfilters:+* ^
+                  -classfilters:+* ^
+                  -filefilters:-*Program.cs;-*Startup.cs;-*.g.cs ^
+                  -verbosity:Info
                 """
             }
         }
