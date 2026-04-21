@@ -56,9 +56,9 @@ pipeline {
 
         stage('Publish Coverage') {
     steps {
-        recordCoverage tools: [
-            cobertura(pattern: 'coverage-report/Cobertura.xml')
-        ]
+        publishCoverage adapters: [
+    coberturaAdapter('coverage-report/Cobertura.xml')
+]
     }
 }
 
