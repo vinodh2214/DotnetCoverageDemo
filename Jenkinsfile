@@ -58,10 +58,11 @@ pipeline {
             }
         }
     }
-    post{
-        always{
+    post {
+    always {
         publishCoverage adapters: [
-                    cobertura('**/coverage.cobertura.xml')
-                ]
-    }}
+            coberturaAdapter('**/coverage.cobertura.xml')
+        ]
+    }
+}
 }
