@@ -28,8 +28,7 @@ pipeline {
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
                       /d:sonar.cs.cobertura.reportsPaths=TestResults/coverage.cobertura.xml ^
-                      /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
-                      /d:sonar.tests=**/*.Tests
+                      /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/**
                     """
                 }
             }
@@ -41,16 +40,20 @@ pipeline {
             }
         }
 
-        stage('Test + Coverage') {
+        stage('Test + Coverage (Fixed File)') {
             steps {
                 bat """
                 dotnet test ^
-                  --collect:"XPlat Code Coverage" ^
-                  --results-directory TestResults ^
                   /p:CollectCoverage=true ^
                   /p:CoverletOutputFormat=cobertura ^
                   /p:CoverletOutput=TestResults/coverage.cobertura.xml
                 """
+            }
+        }
+
+        stage('Verify Coverage File') {
+            steps {
+                bat 'dir TestResults'
             }
         }
 
@@ -68,8 +71,8 @@ pipeline {
 
     post {
         always {
-           recordCoverage tools: [
-    [parser: 'COBERTURA', pattern: '**/coverage.cobertura.xml']
+            recordCoverage tools: [
+    [parser: 'COBERTURA', pattern: 'TestResults/coverage.cobertura.xml']
 ]
         }
     }
