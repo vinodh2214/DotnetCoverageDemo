@@ -8,6 +8,12 @@ pipeline {
 
     stages {
 
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -21,7 +27,8 @@ pipeline {
                     "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
-                      /d:sonar.cs.cobertura.reportsPaths=**/coverage.cobertura.xml ^
+                      /d:sonar.cs.opencover.reportsPaths= ^
+                      /d:sonar.cs.cobertura.reportsPaths=TestResults/coverage.cobertura.xml ^
                       /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
                       /d:sonar.tests=**/*.Tests
                     """
@@ -35,13 +42,22 @@ pipeline {
             }
         }
 
-        stage('Test + XPlat Coverage') {
+        stage('Test + Coverage (Single File)') {
             steps {
                 bat """
                 dotnet test ^
                   --collect:"XPlat Code Coverage" ^
-                  --results-directory TestResults
+                  --results-directory TestResults ^
+                  /p:CollectCoverage=true ^
+                  /p:CoverletOutputFormat=cobertura ^
+                  /p:CoverletOutput=TestResults/coverage.cobertura.xml
                 """
+            }
+        }
+
+        stage('Verify Coverage File') {
+            steps {
+                bat 'dir TestResults'
             }
         }
 
@@ -59,11 +75,9 @@ pipeline {
 
     post {
         always {
-            
-               recordCoverage tools: [
-    [parser: 'COBERTURA', pattern: '**/coverage.cobertura.xml']
-]
-           
+            recordCoverage tools: [
+                cobertura(pattern: 'TestResults/coverage.cobertura.xml')
+            ]
         }
     }
 }
