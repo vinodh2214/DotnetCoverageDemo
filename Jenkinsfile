@@ -59,10 +59,11 @@ pipeline {
         }
     }
     post {
-    always {
-        publishCoverage adapters: [
-             coberturaAdapter('**/coverage.cobertura.xml')
-        ]
+        always {
+            recordCoverage tools: [
+                cobertura(pattern: '**/coverage.cobertura.xml')
+            ]
+        }
     }
 }
 }
