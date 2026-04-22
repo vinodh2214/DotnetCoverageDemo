@@ -61,7 +61,7 @@ pipeline {
     post {
     always {
         publishCoverage adapters: [
-            coberturaAdapter('**/coverage.cobertura.xml')
+            cobertura('**/coverage.cobertura.xml')
         ]
     }
 }
