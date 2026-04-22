@@ -4,8 +4,6 @@ pipeline {
     environment {
         SONAR_TOKEN = credentials('sonar')
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
-        DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
-        REPORT_GENERATOR = "C:\\Users\\JALAGAM\\.dotnet\\tools\\reportgenerator.exe"
     }
 
     stages {
@@ -23,7 +21,7 @@ pipeline {
                     "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
-                      /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml ^
+                      /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml ^
                       /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
                       /d:sonar.tests=**/*.Tests
                     """
@@ -37,34 +35,17 @@ pipeline {
             }
         }
 
-        stage('Test + Coverage') {
+        stage('Test + XPlat Coverage') {
             steps {
                 bat """
-                "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
+                dotnet test ^
+                  --collect:"XPlat Code Coverage" ^
+                  --results-directory TestResults
                 """
             }
         }
 
-        stage('Generate HTML Coverage Report') {
-            steps {
-                bat """
-                "%REPORT_GENERATOR%" ^
-                  -reports:coverage.xml ^
-                  -targetdir:coverage-report ^
-                  -reporttypes:Html ^
-                  -assemblyfilters:+* ^
-                  -classfilters:+* ^
-                  -filefilters:-*Program.cs;-*Startup.cs;-*.g.cs ^
-                  -verbosity:Info
-                """
-            }
-        }
-
-        stage('Publish Coverage (HTML)') {
-            steps {
-                archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
-            }
-        }
+        
 
         stage('Sonar End') {
             steps {
@@ -77,4 +58,10 @@ pipeline {
             }
         }
     }
+    post{
+        always{
+        publishCoverage adapters: [
+                    cobertura('**/coverage.cobertura.xml')
+                ]
+    }}
 }
