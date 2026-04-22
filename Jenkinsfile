@@ -59,9 +59,11 @@ pipeline {
 
     post {
         always {
-            recordCoverage tools: [
-                cobertura(pattern: '**/coverage.cobertura.xml')
-            ]
+            
+               recordCoverage tools: [
+    [parser: 'COBERTURA', pattern: '**/coverage.cobertura.xml']
+]
+           
         }
     }
 }
