@@ -21,7 +21,7 @@ pipeline {
                     "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
-                      /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml ^
+                      /d:sonar.cs.cobertura.reportsPaths=**/coverage.cobertura.xml ^
                       /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
                       /d:sonar.tests=**/*.Tests
                     """
@@ -45,8 +45,6 @@ pipeline {
             }
         }
 
-        
-
         stage('Sonar End') {
             steps {
                 withSonarQubeEnv('SonarQube') {
@@ -58,6 +56,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             recordCoverage tools: [
@@ -65,5 +64,4 @@ pipeline {
             ]
         }
     }
-
 }
