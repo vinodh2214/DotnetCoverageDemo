@@ -27,7 +27,6 @@ pipeline {
                     "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
-                      /d:sonar.cs.opencover.reportsPaths= ^
                       /d:sonar.cs.cobertura.reportsPaths=TestResults/coverage.cobertura.xml ^
                       /d:sonar.exclusions=**/Program.cs,**/Startup.cs,**/*.g.cs,**/bin/**,**/obj/** ^
                       /d:sonar.tests=**/*.Tests
@@ -42,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Test + Coverage (Single File)') {
+        stage('Test + Coverage') {
             steps {
                 bat """
                 dotnet test ^
@@ -52,12 +51,6 @@ pipeline {
                   /p:CoverletOutputFormat=cobertura ^
                   /p:CoverletOutput=TestResults/coverage.cobertura.xml
                 """
-            }
-        }
-
-        stage('Verify Coverage File') {
-            steps {
-                bat 'dir TestResults'
             }
         }
 
