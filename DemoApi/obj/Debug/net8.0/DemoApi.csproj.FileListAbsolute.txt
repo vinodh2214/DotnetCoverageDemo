@@ -31,3 +31,4 @@ C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\refint\DemoApi.dll
 C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\DemoApi.pdb
 C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\DemoApi.genruntimeconfig.cache
 C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\ref\DemoApi.dll
+c:\Users\JALAGAM\DotnetCoverageDemo\DemoApi\obj\Debug\net8.0\DemoApi.sourcelink.json

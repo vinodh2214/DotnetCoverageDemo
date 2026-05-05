@@ -110,3 +110,4 @@ C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi.Tests\obj\Debug\net8.0\refint\DemoAp
 C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi.Tests\obj\Debug\net8.0\DemoApi.Tests.pdb
 C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi.Tests\obj\Debug\net8.0\DemoApi.Tests.genruntimeconfig.cache
 C:\Users\JALAGAM\DotnetCoverageDemo\DemoApi.Tests\obj\Debug\net8.0\ref\DemoApi.Tests.dll
+c:\Users\JALAGAM\DotnetCoverageDemo\DemoApi.Tests\obj\Debug\net8.0\DemoApi.Tests.sourcelink.json
