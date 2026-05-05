@@ -3,9 +3,6 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
-        SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
-        DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
-        REPORT_GENERATOR = "C:\\Users\\JALAGAM\\.dotnet\\tools\\reportgenerator.exe"
     }
 
     stages {
@@ -16,11 +13,17 @@ pipeline {
             }
         }
 
+        stage('Restore .NET Tools (Manifest)') {
+            steps {
+                bat 'dotnet tool restore'
+            }
+        }
+
         stage('Sonar Begin') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                    "%SONAR_SCANNER%" begin ^
+                    dotnet tool run dotnet-sonarscanner begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
                       /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml ^
@@ -40,7 +43,7 @@ pipeline {
         stage('Test + Coverage') {
             steps {
                 bat """
-                "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
+                dotnet tool run dotnet-coverage collect "dotnet test" -f xml -o coverage.xml
                 """
             }
         }
@@ -48,7 +51,7 @@ pipeline {
         stage('Generate HTML Coverage Report') {
             steps {
                 bat """
-                "%REPORT_GENERATOR%" ^
+                dotnet tool run reportgenerator ^
                   -reports:coverage.xml ^
                   -targetdir:coverage-report ^
                   -reporttypes:Html ^
@@ -70,7 +73,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                    "%SONAR_SCANNER%" end ^
+                    dotnet tool run dotnet-sonarscanner end ^
                       /d:sonar.login=%SONAR_TOKEN%
                     """
                 }
