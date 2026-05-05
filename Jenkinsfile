@@ -87,8 +87,7 @@ pipeline {
 
     post {
         always {
-            // Publish test results in Jenkins UI
-            junit '**/test-results.xml'
+            
 
             // Publish coverage in Jenkins UI (VS Coverage XML format)
             publishCoverage adapters: [
