@@ -41,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Test + Coverage') {
+      stage('Test + Coverage') {
             steps {
                 bat """
                 dotnet tool run dotnet-coverage collect ^
