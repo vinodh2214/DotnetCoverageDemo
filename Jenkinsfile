@@ -36,14 +36,18 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'dotnet build'
+                bat 'dotnet restore'
+                bat 'dotnet build --no-restore'
             }
         }
 
         stage('Test + Coverage') {
             steps {
                 bat """
-                dotnet tool run dotnet-coverage collect "dotnet test" -f xml -o coverage.xml
+                dotnet tool run dotnet-coverage collect ^
+                  "dotnet test --no-build --logger \\"junit;LogFilePath=test-results.xml\\"" ^
+                  -f xml ^
+                  -o coverage.xml
                 """
             }
         }
@@ -78,6 +82,18 @@ pipeline {
                     """
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            // Publish test results in Jenkins UI
+            junit '**/test-results.xml'
+
+            // Publish coverage in Jenkins UI (VS Coverage XML format)
+            publishCoverage adapters: [
+                visualStudioAdapter('coverage.xml')
+            ]
         }
     }
 }
