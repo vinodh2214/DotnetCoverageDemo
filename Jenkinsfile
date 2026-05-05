@@ -67,12 +67,6 @@ pipeline {
             }
         }
 
-        stage('Publish Coverage (HTML)') {
-            steps {
-                archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
-            }
-        }
-
         stage('Sonar End') {
             steps {
                 withSonarQubeEnv('SonarQube') {
@@ -87,12 +81,17 @@ pipeline {
 
     post {
         always {
-            
+           
 
-            // Publish coverage in Jenkins UI (VS Coverage XML format)
-            publishCoverage adapters: [
-                visualStudioAdapter('coverage.xml')
-            ]
+            // ✅ Publish HTML coverage report directly in Jenkins UI
+            publishHTML([
+                reportName: '📊 Code Coverage Report',
+                reportDir: 'coverage-report',
+                reportFiles: 'index.html',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: false
+            ])
         }
     }
 }
