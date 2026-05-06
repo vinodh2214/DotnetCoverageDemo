@@ -3,6 +3,9 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
+        SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
+        DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
+        REPORT_GENERATOR = "C:\\Users\\JALAGAM\\.dotnet\\tools\\reportgenerator.exe"
     }
 
     stages {
@@ -13,17 +16,11 @@ pipeline {
             }
         }
 
-        stage('Restore .NET Tools (Manifest)') {
-            steps {
-                bat 'dotnet tool restore'
-            }
-        }
-
         stage('Sonar Begin') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                    dotnet tool run dotnet-sonarscanner begin ^
+                    "%SONAR_SCANNER%" begin ^
                       /k:"dotnet-project" ^
                       /d:sonar.login=%SONAR_TOKEN% ^
                       /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml ^
@@ -36,18 +33,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'dotnet restore'
-                bat 'dotnet build --no-restore'
+                bat 'dotnet build'
             }
         }
 
-      stage('Test + Coverage') {
+        stage('Test + Coverage') {
             steps {
                 bat """
-                dotnet tool run dotnet-coverage collect ^
-                  "dotnet test --no-build --logger \\"junit;LogFilePath=test-results.xml\\"" ^
-                  -f xml ^
-                  -o coverage.xml
+                "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
                 """
             }
         }
@@ -55,7 +48,7 @@ pipeline {
         stage('Generate HTML Coverage Report') {
             steps {
                 bat """
-                dotnet tool run reportgenerator ^
+                "%REPORT_GENERATOR%" ^
                   -reports:coverage.xml ^
                   -targetdir:coverage-report ^
                   -reporttypes:Html ^
@@ -67,31 +60,21 @@ pipeline {
             }
         }
 
+        stage('Publish Coverage (HTML)') {
+            steps {
+                archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
+            }
+        }
+
         stage('Sonar End') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                    dotnet tool run dotnet-sonarscanner end ^
+                    "%SONAR_SCANNER%" end ^
                       /d:sonar.login=%SONAR_TOKEN%
                     """
                 }
             }
-        }
-    }
-
-    post {
-        always {
-           
-
-            // ✅ Publish HTML coverage report directly in Jenkins UI
-            publishHTML([
-                reportName: '📊 Code Coverage Report',
-                reportDir: 'coverage-report',
-                reportFiles: 'index.html',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: false
-            ])
         }
     }
 }
