@@ -3,16 +3,30 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
+        // Your Gemini Key
+        AI_KEY = credentials('GEMINI_API_KEY') 
+        
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
         DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
         REPORT_GENERATOR = "C:\\Users\\JALAGAM\\.dotnet\\tools\\reportgenerator.exe"
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        // --- NEW: AI ANALYSIS STAGE ---
+        stage('AI Code Review') {
+            steps {
+                aiAgent(
+                    agentType: 'gemini',
+                    model: 'gemini-1.5-pro',
+                    prompt: "Review the recent changes in this .NET project. Focus on C# best practices, potential NullReferenceExceptions, and async/await threading issues. Provide feedback as if you are a Senior Developer.",
+                    yoloMode: true
+                )
             }
         }
 
@@ -75,6 +89,17 @@ pipeline {
                     """
                 }
             }
+        }
+    }
+
+    // --- NEW: SELF-HEALING ON FAILURE ---
+    post {
+        failure {
+            aiAgent(
+                agentType: 'gemini',
+                model: 'gemini-1.5-flash', // Lighter model for quick log analysis
+                prompt: "The .NET build failed. Analyze the logs and suggest the exact command or code change needed to fix it. Build URL: ${env.BUILD_URL}"
+            )
         }
     }
 }
