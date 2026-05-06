@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
-        // Your Gemini Key
-        AI_KEY = credentials('GEMINI_API_KEY') 
+        // Use the ID you gave your secret in Jenkins Credentials
+        AI_CREDENTIALS_ID = 'GEMINI_API_KEY' 
         
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
         DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
@@ -18,13 +18,15 @@ pipeline {
             }
         }
 
-        // --- NEW: AI ANALYSIS STAGE ---
         stage('AI Code Review') {
             steps {
+                // FIXED SYNTAX: agentType is replaced by the specific handler symbol
                 aiAgent(
-                    agentType: 'gemini',
-                    model: 'gemini-1.5-pro',
-                    prompt: "Review the recent changes in this .NET project. Focus on C# best practices, potential NullReferenceExceptions, and async/await threading issues. Provide feedback as if you are a Senior Developer.",
+                    handler: geminiCli(
+                        credentialsId: "${AI_CREDENTIALS_ID}",
+                        model: 'gemini-1.5-pro'
+                    ),
+                    prompt: "Review the C# changes. Identify security flaws and logic bugs. Provide feedback as inline-style comments for the logs.",
                     yoloMode: true
                 )
             }
@@ -92,13 +94,15 @@ pipeline {
         }
     }
 
-    // --- NEW: SELF-HEALING ON FAILURE ---
     post {
         failure {
+            // FIXED SYNTAX: Also updated the failure block
             aiAgent(
-                agentType: 'gemini',
-                model: 'gemini-1.5-flash', // Lighter model for quick log analysis
-                prompt: "The .NET build failed. Analyze the logs and suggest the exact command or code change needed to fix it. Build URL: ${env.BUILD_URL}"
+                handler: geminiCli(
+                    credentialsId: "${AI_CREDENTIALS_ID}",
+                    model: 'gemini-1.5-flash'
+                ),
+                prompt: "Analyze these .NET build logs and provide a fix: ${env.BUILD_URL}"
             )
         }
     }
