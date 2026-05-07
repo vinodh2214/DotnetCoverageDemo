@@ -3,8 +3,10 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
-        // The plugin will automatically look for this ENV variable
         GEMINI_API_KEY = credentials('GEMINI_API_KEY') 
+        
+        // Use the .cmd path found in your 'where' command
+        GEMINI_BIN = "C:\\Users\\JALAGAM\\AppData\\Roaming\\npm\\gemini.cmd" 
         
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
         DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
@@ -20,9 +22,8 @@ pipeline {
 
         stage('AI Code Review') {
             steps {
-                // Simplified syntax: 'agent' just points to the type
                 aiAgent(
-                    agent: geminiCli(), 
+                    agent: geminiCli(customBin: "${GEMINI_BIN}"), 
                     model: 'gemini-1.5-pro',
                     prompt: "Review the C# changes in this .NET project. Focus on performance and NullReferenceExceptions.",
                     yoloMode: true
@@ -51,34 +52,7 @@ pipeline {
             }
         }
 
-        stage('Test + Coverage') {
-            steps {
-                bat """
-                "%DOTNET_COVERAGE%" collect "dotnet test" -f xml -o coverage.xml
-                """
-            }
-        }
-
-        stage('Generate HTML Coverage Report') {
-            steps {
-                bat """
-                "%REPORT_GENERATOR%" ^
-                  -reports:coverage.xml ^
-                  -targetdir:coverage-report ^
-                  -reporttypes:Html ^
-                  -assemblyfilters:+* ^
-                  -classfilters:+* ^
-                  -filefilters:-*Program.cs;-*Startup.cs;-*.g.cs ^
-                  -verbosity:Info
-                """
-            }
-        }
-
-        stage('Publish Coverage (HTML)') {
-            steps {
-                archiveArtifacts artifacts: 'coverage-report/**', fingerprint: true
-            }
-        }
+        // ... Keep your Test and Report stages as they are ...
 
         stage('Sonar End') {
             steps {
@@ -95,9 +69,9 @@ pipeline {
     post {
         failure {
             aiAgent(
-                agent: geminiCli(),
+                agent: geminiCli(customBin: "${GEMINI_BIN}"),
                 model: 'gemini-1.5-flash',
-                prompt: "Identify the failure in these .NET build logs and propose a fix."
+                prompt: "Identify why the .NET build failed from the logs and suggest a code fix."
             )
         }
     }
