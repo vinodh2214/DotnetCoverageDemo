@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
-        // Your Gemini Key ID from Jenkins Credentials
-        AI_CRED_ID = 'GEMINI_API_KEY' 
+        // The plugin will automatically look for this ENV variable
+        GEMINI_API_KEY = credentials('GEMINI_API_KEY') 
         
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
         DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
@@ -20,11 +20,11 @@ pipeline {
 
         stage('AI Code Review') {
             steps {
-                // Use 'agent' to specify the handler and 'model' for the version
+                // Simplified syntax: 'agent' just points to the type
                 aiAgent(
-                    agent: geminiCli(credentialsId: "${AI_CRED_ID}"),
+                    agent: geminiCli(), 
                     model: 'gemini-1.5-pro',
-                    prompt: "Review the C# changes in this .NET project. Focus on best practices and potential logic bugs.",
+                    prompt: "Review the C# changes in this .NET project. Focus on performance and NullReferenceExceptions.",
                     yoloMode: true
                 )
             }
@@ -95,9 +95,9 @@ pipeline {
     post {
         failure {
             aiAgent(
-                agent: geminiCli(credentialsId: "${AI_CRED_ID}"),
+                agent: geminiCli(),
                 model: 'gemini-1.5-flash',
-                prompt: "Analyze the .NET build logs and provide a fix for the failure."
+                prompt: "Identify the failure in these .NET build logs and propose a fix."
             )
         }
     }
