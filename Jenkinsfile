@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar')
-        // Use the ID you gave your secret in Jenkins Credentials
-        AI_CREDENTIALS_ID = 'GEMINI_API_KEY' 
+        // Your Gemini Key ID from Jenkins Credentials
+        AI_CRED_ID = 'GEMINI_API_KEY' 
         
         SONAR_SCANNER = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-sonarscanner.exe"
         DOTNET_COVERAGE = "C:\\Users\\JALAGAM\\.dotnet\\tools\\dotnet-coverage.exe"
@@ -20,13 +20,11 @@ pipeline {
 
         stage('AI Code Review') {
             steps {
-                // FIXED SYNTAX: agentType is replaced by the specific handler symbol
+                // Use 'agent' to specify the handler and 'model' for the version
                 aiAgent(
-                    handler: geminiCli(
-                        credentialsId: "${AI_CREDENTIALS_ID}",
-                        model: 'gemini-1.5-pro'
-                    ),
-                    prompt: "Review the C# changes. Identify security flaws and logic bugs. Provide feedback as inline-style comments for the logs.",
+                    agent: geminiCli(credentialsId: "${AI_CRED_ID}"),
+                    model: 'gemini-1.5-pro',
+                    prompt: "Review the C# changes in this .NET project. Focus on best practices and potential logic bugs.",
                     yoloMode: true
                 )
             }
@@ -96,13 +94,10 @@ pipeline {
 
     post {
         failure {
-            // FIXED SYNTAX: Also updated the failure block
             aiAgent(
-                handler: geminiCli(
-                    credentialsId: "${AI_CREDENTIALS_ID}",
-                    model: 'gemini-1.5-flash'
-                ),
-                prompt: "Analyze these .NET build logs and provide a fix: ${env.BUILD_URL}"
+                agent: geminiCli(credentialsId: "${AI_CRED_ID}"),
+                model: 'gemini-1.5-flash',
+                prompt: "Analyze the .NET build logs and provide a fix for the failure."
             )
         }
     }
